@@ -1,4 +1,6 @@
-# Zero-Trust Donor Cut-and-Mail + Escrow (v1 simulation)
+# Zero-Trust Donor Cut-and-Mail + Escrow (v1.1 simulation)
+
+**v1.1 delta:** required cut video, structured interview (age≥18 / chemical / ethnicity+texture), donor score→offer tiers, country risk (MM capped), public texture+region+score band.
 
 Greenfield Vite + React + TypeScript SPA for Hair Sourcing: donors cut their own ponytails, mail them to brand intake, and are paid only after QC pass. Escrow is a labeled simulation (no real PSP/bank APIs).
 
@@ -16,9 +18,9 @@ Path: `/workspace/hair-sourcing/zero-trust-donor-escrow/`
 
 | Role | Access | Notes |
 |-p--|--p--|--p--|
-| **Donor** | Open (no password) | Eligibility – pre-cut proof – lot ID – cut proof – tracking – timeline |
+| **Donor** | Open (no password) | Eligibility → interview → score/offer → pre-cut → lot ID → cut video (required) → tracking → timeline |
 | **Intake / Admin** | Password: `dem`` | Staff alias required. QC checklist, escrow release/refund, dual-control override, audit log |
-| **Public lot scan** | Open | Provenance card only (no home address / face / alias) |
+| **Public lot scan** | Open | Provenance: texture + region + score band (ethnicity opt-in); no home address / face / alias |
 
 ## Country allowlist
 

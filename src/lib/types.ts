@@ -85,8 +85,11 @@ export interface DonorScoreResult {
   tierLabel: string
   multiplier: number
   offerAmountLocal: number
+  /** Country base £/kg (Financial planning rate). */
   baseAmountLocal: number
   scoreBand: string
+  /** Grams used for offer calc (default 100). */
+  weightGrams?: number
 }
 
 export interface Lot {
@@ -95,6 +98,8 @@ export interface Lot {
   contact: string /** email or phone — OTP mock only */
   country: CountryCode
   lengthCm: number
+  /** Donor-entered ponytail weight in grams (planning default 100). */
+  weightGrams: number
   virgin: boolean
   age18Plus: boolean
   chemicalHistory: string

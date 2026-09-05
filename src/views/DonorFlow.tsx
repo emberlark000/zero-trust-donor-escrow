@@ -18,6 +18,7 @@ import { defaultQcChecklist } from '../lib/qcDefaults'
 import {
   chemicalKindLabel,
   computeDonorScore,
+  DEFAULT_WEIGHT_GRAMS,
   defaultChemicalStatement,
   toAgeBand,
 } from '../lib/donorScore'
@@ -37,6 +38,7 @@ export function DonorFlow({ onAudit }: Props) {
   const [otpOk, setOtpOk] = useState(false)
   const [country, setCountry] = useState<CountryCode | ''>('')
   const [lengthCm, setLengthCm] = useState(40)
+  const [weightGrams, setWeightGrams] = useState(DEFAULT_WEIGHT_GRAMS)
   const [healthOk, setHealthOk] = useState(false)
   const [quizError, setQuizError] = useState('')
   const [proofs, setProofs] = useState<ProofFileMeta[]>([])
@@ -103,8 +105,9 @@ export function DonorFlow({ onAudit }: Props) {
       lengthCm,
       country,
       proofs,
+      weightGrams,
     })
-  }, [interviewDraft, lengthCm, country, proofs])
+  }, [interviewDraft, lengthCm, country, proofs, weightGrams])
 
   function addProof(meta: ProofFileMeta) {
     setProofs((p) => [...p.filter((x) => x.kind !== meta.kind), meta])
@@ -169,6 +172,7 @@ export function DonorFlow({ onAudit }: Props) {
       lengthCm,
       country,
       proofs,
+      weightGrams,
     })
     if (score.gated || score.tier === 'none' || score.offerAmountLocal <= 0) {
       setInterviewError(
@@ -178,7 +182,6 @@ export function DonorFlow({ onAudit }: Props) {
       return
     }
 
-    const info = COUNTRIES[country]
     const virgin =
       chemicalKind === 'near_virgin' || chemicalKind === 'heat_only'
     const newLot: Lot = {
@@ -187,6 +190,7 @@ export function DonorFlow({ onAudit }: Props) {
       contact: contact.trim(),
       country,
       lengthCm,
+      weightGrams,
       virgin,
       age18Plus: true,
       chemicalHistory: chemicalKind,
@@ -194,12 +198,12 @@ export function DonorFlow({ onAudit }: Props) {
       donorScore: score,
       escrowState: 'offered',
       offerAmountLocal: score.offerAmountLocal,
-      currency: info.currency,
+      currency: 'GBP',
       platformFeePct: 8,
       proofs: proofs.filter((p) => p.kind === 'interview_video' || p.kind === 'interview_audio'),
       timestamps: { created: new Date().toISOString() },
       escrowSim: {
-        brandWallet: 100000,
+        brandWallet: 75000,
         escrowHold: 0,
         donorPaid: 0,
         brandRefunded: 0,
@@ -211,7 +215,7 @@ export function DonorFlow({ onAudit }: Props) {
     await appendAudit(
       alias.trim(),
       'lot.offer_locked_from_score',
-      `Score ${score.total} (${score.scoreBand}) → ${score.tierLabel} → ${score.offerAmountLocal} ${info.currency}`,
+      `Score ${score.total} (${score.scoreBand}) → ${score.tierLabel} → £${score.offerAmountLocal} GBP (${weightGrams}g · base £${score.baseAmountLocal}/kg × ${(weightGrams / 1000).toFixed(3)}kg × ${score.multiplier}). Local payout still simulated rail.`,
       newLot.lotId,
     )
     setLot(newLot)
@@ -240,6 +244,7 @@ export function DonorFlow({ onAudit }: Props) {
       lengthCm: lot.lengthCm,
       country: lot.country,
       proofs: merged,
+      weightGrams: lot.weightGrams ?? DEFAULT_WEIGHT_GRAMS,
     })
     // Keep locked offer amount (already accepted tier); refresh breakdown for honesty/precut pts display
     let next: Lot = {
@@ -277,6 +282,7 @@ export function DonorFlow({ onAudit }: Props) {
       lengthCm: lot.lengthCm,
       country: lot.country,
       proofs: merged,
+      weightGrams: lot.weightGrams ?? DEFAULT_WEIGHT_GRAMS,
     })
     let next: Lot = {
       ...lot,
@@ -345,6 +351,7 @@ export function DonorFlow({ onAudit }: Props) {
     setProofs(found.proofs)
     setCountry(found.country)
     setLengthCm(found.lengthCm)
+    setWeightGrams(found.weightGrams ?? DEFAULT_WEIGHT_GRAMS)
     if (found.interview) {
       setStatedAge(found.interview.statedAge)
       setChemicalKind(found.interview.chemicalKind)
@@ -457,7 +464,7 @@ export function DonorFlow({ onAudit }: Props) {
           {country === 'MM' && (
             <p className="warn">
               Myanmar is allowlisted but flagged <strong>high-risk</strong> — country score factor is
-              capped lower.
+              capped lower, and Financial applies a ×0.85 rate haircut (£222.39/kg base vs £261.63).
             </p>
           )}
 
@@ -471,6 +478,21 @@ export function DonorFlow({ onAudit }: Props) {
               onChange={(e) => setLengthCm(Number(e.target.value))}
             />
           </label>
+          <label>
+            Weight (grams) — planning ponytail mass for £ offer
+            <input
+              type="number"
+              min={20}
+              max={500}
+              step={1}
+              value={weightGrams}
+              onChange={(e) => setWeightGrams(Math.max(1, Number(e.target.value) || DEFAULT_WEIGHT_GRAMS))}
+            />
+          </label>
+          <p className="muted small">
+            Default {DEFAULT_WEIGHT_GRAMS} g (0.1 kg). Offer = round(base £/kg × kg × tier). Local payout remains a
+            simulated rail; UI shows planning GBP.
+          </p>
           <label className="check">
             <input type="checkbox" checked={healthOk} onChange={(e) => setHealthOk(e.target.checked)} />
             Basic health OK to ship (no active scalp infection known)
@@ -637,11 +659,10 @@ export function DonorFlow({ onAudit }: Props) {
               {!liveScore.gated && liveScore.tier !== 'none' && countryInfo && (
                 <p className="offer-box">
                   Projected offer if locked now:{' '}
-                  <strong>
-                    {liveScore.offerAmountLocal} {countryInfo.currency}
-                  </strong>{' '}
-                  (base {liveScore.baseAmountLocal} × {liveScore.multiplier}). Escrow still funds only
-                  on accept; pays only on QC pass.
+                  <strong>£{liveScore.offerAmountLocal.toFixed(2)}</strong>{' '}
+                  (base £{liveScore.baseAmountLocal}/kg × {(weightGrams / 1000).toFixed(3)} kg ×{' '}
+                  {liveScore.multiplier}). Escrow funds only on accept; pays only on QC pass. Local
+                  payout is a simulated rail — this sim shows planning £.
                 </p>
               )}
             </div>
@@ -682,10 +703,10 @@ export function DonorFlow({ onAudit }: Props) {
           </ul>
           <p className="offer-box">
             Locked offer:{' '}
-            <strong>
-              {lot.offerAmountLocal} {lot.currency}
-            </strong>{' '}
-            (8% platform fee disclosed). QC fail can still zero out pay regardless of score.
+            <strong>£{lot.offerAmountLocal.toFixed(2)}</strong> GBP ({lot.weightGrams ?? DEFAULT_WEIGHT_GRAMS}{' '}
+            g · base £{lot.donorScore.baseAmountLocal}/kg × tier {lot.donorScore.multiplier}). 8% platform
+            fee disclosed. QC fail can still zero out pay regardless of score. Local payout = simulated
+            rail.
           </p>
           {COUNTRIES[lot.country].highRisk && (
             <p className="warn">Myanmar / high-risk corridor badge — elevated intake review.</p>
@@ -735,8 +756,9 @@ export function DonorFlow({ onAudit }: Props) {
             )}
           </p>
           <p className="muted">
-            SIMULATION: brand funded {lot.offerAmountLocal} {lot.currency} into escrow hold. Print/affix
-            lot ID on sealed bag. Next: cut video is <strong>required</strong>.
+            SIMULATION: brand funded £{lot.offerAmountLocal.toFixed(2)} GBP into escrow hold. Print/affix
+            lot ID on sealed bag. Next: cut video is <strong>required</strong>. Local payout remains a
+            simulated rail.
           </p>
           <StatusTimeline state={lot.escrowState} />
           <button type="button" className="btn primary" onClick={() => setStep('cut')}>
@@ -805,16 +827,19 @@ export function DonorFlow({ onAudit }: Props) {
             <h4>Escrow simulation</h4>
             <ul>
               <li>
-                Hold: {lot.escrowSim.escrowHold} {lot.currency}
+                Hold: £{lot.escrowSim.escrowHold} GBP
               </li>
               <li>
-                Donor paid: {lot.escrowSim.donorPaid} {lot.currency}
+                Donor paid: £{lot.escrowSim.donorPaid} GBP
               </li>
               <li>
-                Brand refunded: {lot.escrowSim.brandRefunded} {lot.currency}
+                Brand refunded: £{lot.escrowSim.brandRefunded} GBP
               </li>
             </ul>
-            <p className="muted small">Paid only on QC pass. No cash-on-ship.</p>
+            <p className="muted small">
+              Paid only on QC pass. No cash-on-ship. Amounts are planning £; local payout is a simulated
+              rail.
+            </p>
           </div>
           <ProvenanceCard lot={lot} />
         </section>

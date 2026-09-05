@@ -165,6 +165,23 @@ export function IntakeAdmin({ actor, auditKey, onAudit }: Props) {
         </p>
       </header>
 
+      <section className="panel financial-flag">
+        <h3>Financial planning flag</h3>
+        <p className="warn">
+          <strong>£75k / 215 kg is thin for all mid–top.</strong> All-top-tier from the donor pool only
+          buys ~119 kg. Hitting 215 kg needs mostly <strong>base/mid</strong> mix (or a higher budget /
+          lower kg target). Gate high/top to QC-proven near-virgin lots.
+        </p>
+        <p className="muted small">
+          Rates: IN/KH/PL base £261.63/kg; MM £222.39/kg (×0.85). Tiers ×1.0 / 1.25 / 1.5 / 1.8. Offer =
+          round(base£/kg × kg × tier, 2). Myanmar remains <strong>high-risk</strong>.
+        </p>
+        <p className="muted small">
+          Optional note: Financial&apos;s <strong>25% reserve</strong> (£18,750 for ship/QC/FX/fee) is
+          ops budgeting — <em>not</em> an escrow state in this sim.
+        </p>
+      </section>
+
       <section className="panel">
         <div className="panel-head">
           <h3>Lots</h3>
@@ -203,7 +220,10 @@ export function IntakeAdmin({ actor, auditKey, onAudit }: Props) {
                       <span className={`pill state-${l.escrowState}`}>{l.escrowState}</span>
                     </td>
                     <td>
-                      {l.offerAmountLocal} {l.currency}
+                      £{l.offerAmountLocal.toFixed(2)}
+                      {l.weightGrams != null ? (
+                        <span className="muted small"> · {l.weightGrams}g</span>
+                      ) : null}
                     </td>
                     <td>
                       <button type="button" className="btn ghost" onClick={() => setSelectedId(l.lotId)}>
@@ -267,11 +287,16 @@ export function IntakeAdmin({ actor, auditKey, onAudit }: Props) {
           )}
           <div className="money-sim">
             <ul>
-              <li>Escrow hold: {selected.escrowSim.escrowHold}</li>
-              <li>Donor paid: {selected.escrowSim.donorPaid}</li>
-              <li>Brand refunded: {selected.escrowSim.brandRefunded}</li>
-              <li>Brand wallet (sim): {selected.escrowSim.brandWallet}</li>
+              <li>
+                Offer: £{selected.offerAmountLocal.toFixed(2)} GBP
+                {selected.weightGrams != null ? ` (${selected.weightGrams} g)` : ''}
+              </li>
+              <li>Escrow hold: £{selected.escrowSim.escrowHold}</li>
+              <li>Donor paid: £{selected.escrowSim.donorPaid}</li>
+              <li>Brand refunded: £{selected.escrowSim.brandRefunded}</li>
+              <li>Brand wallet (sim): £{selected.escrowSim.brandWallet}</li>
             </ul>
+            <p className="muted small">Planning £ — local payout is a simulated rail.</p>
           </div>
 
           <div className="row wrap">

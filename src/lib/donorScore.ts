@@ -9,12 +9,41 @@ import type {
 } from './types'
 import { COUNTRIES } from './countries'
 
-/** Simulation base offer by country (local currency). */
-export const BASE_OFFER_BY_COUNTRY: Record<string, number> = {
-  IN: 8500,
-  KH: 45,
-  MM: 80000,
-  PL: 180,
+/**
+ * GBP planning base £/kg by country (Financial 2026-09-05).
+ * IN/KH/PL = 261.63; MM = 222.39 (×0.85 ops/risk haircut).
+ * Tiers multiply 1.0 / 1.25 / 1.5 / 1.8 on country base.
+ */
+export const BASE_GBP_PER_KG: Record<string, number> = {
+  IN: 261.63,
+  KH: 261.63,
+  PL: 261.63,
+  MM: 222.39,
+}
+
+/** Default planning ponytail weight when donor has not entered grams. */
+export const DEFAULT_WEIGHT_GRAMS = 100
+
+/** @deprecated Use BASE_GBP_PER_KG — kept as alias for any stray imports. */
+export const BASE_OFFER_BY_COUNTRY = BASE_GBP_PER_KG
+
+export function gramsToKg(weightGrams: number): number {
+  return Math.max(0, weightGrams) / 1000
+}
+
+/** offerAmount = round(base£/kg × estimatedKg × tierMultiplier, 2) */
+export function computeOfferGbp(
+  country: string,
+  weightGrams: number,
+  tierMultiplier: number,
+): { basePerKg: number; estimatedKg: number; offerAmount: number } {
+  const basePerKg = BASE_GBP_PER_KG[country] ?? 261.63
+  const estimatedKg = gramsToKg(weightGrams)
+  const offerAmount =
+    tierMultiplier <= 0
+      ? 0
+      : Math.round(basePerKg * estimatedKg * tierMultiplier * 100) / 100
+  return { basePerKg, estimatedKg, offerAmount }
 }
 
 /** Country risk points 0–20. MM capped lower (high-risk). */
@@ -101,6 +130,8 @@ export interface ScoreInput {
   lengthCm: number
   country: CountryCode
   proofs: ProofFileMeta[]
+  /** Donor-entered ponytail weight in grams (default 100 g planning weight). */
+  weightGrams?: number
   /** When locking offer before cut, pass false so cut/seal don't inflate pre-accept score display incorrectly — still required later. */
   requireCutForScore?: boolean
 }
@@ -112,8 +143,13 @@ export interface ScoreInput {
  */
 export function computeDonorScore(input: ScoreInput): DonorScoreResult {
   const { interview, lengthCm, country, proofs } = input
+  const weightGrams =
+    input.weightGrams != null && input.weightGrams > 0
+      ? input.weightGrams
+      : DEFAULT_WEIGHT_GRAMS
   const breakdown: ScoreBreakdownLine[] = []
-  const base = BASE_OFFER_BY_COUNTRY[country] ?? 100
+  const { basePerKg } = computeOfferGbp(country, weightGrams, 1)
+  const base = basePerKg
 
   if (!interview.statedAge || interview.statedAge < 18) {
     return {
@@ -134,6 +170,7 @@ export function computeDonorScore(input: ScoreInput): DonorScoreResult {
       offerAmountLocal: 0,
       baseAmountLocal: base,
       scoreBand: 'gated',
+      weightGrams,
     }
   }
 
@@ -241,12 +278,16 @@ export function computeDonorScore(input: ScoreInput): DonorScoreResult {
       offerAmountLocal: 0,
       baseAmountLocal: base,
       scoreBand: 'incomplete',
+      weightGrams,
     }
   }
 
   const { tier, tierLabel, multiplier, scoreBand } = tierFromScore(total)
-  const offerAmountLocal =
-    tier === 'none' ? 0 : Math.round(base * multiplier * 100) / 100
+  const { offerAmount: offerAmountLocal } = computeOfferGbp(
+    country,
+    weightGrams,
+    tier === 'none' ? 0 : multiplier,
+  )
 
   return {
     total,
@@ -258,6 +299,7 @@ export function computeDonorScore(input: ScoreInput): DonorScoreResult {
     offerAmountLocal,
     baseAmountLocal: base,
     scoreBand,
+    weightGrams,
   }
 }
 

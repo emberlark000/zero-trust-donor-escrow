@@ -64,6 +64,10 @@ export function ProvenanceCard({ lot }: { lot: Lot }) {
           <dd>{lot.lengthCm} cm</dd>
         </div>
         <div>
+          <dt>Weight (declared)</dt>
+          <dd>{lot.weightGrams != null ? `${lot.weightGrams} g` : '—'}</dd>
+        </div>
+        <div>
           <dt>Chemical statement (summary)</dt>
           <dd>
             {lot.virgin ? 'Near-virgin / heat-only claimed' : 'Chemical history disclosed'}:{' '}

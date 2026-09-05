@@ -27,6 +27,15 @@ Path: `/workspace/hair-sourcing/zero-trust-donor-escrow/`
 - Allow: India (`IN`), Cambodia (`KH`), Myanmar (`MM` — **high-risk badge** in admin), Poland (`PL` — E. Europe placeholder)
 - Reject: Brazil, Peru, Vietnam (shown in quiz with reject reasons)
 
+## Offer rates (Financial GBP planning)
+
+- Budget context: £75k / ~215 kg (thin for all mid–top — mass needs mostly base/mid)
+- Base £/kg: IN/KH/PL **261.63**; MM **222.39** (×0.85). Tiers ×1.0 / 1.25 / 1.5 / 1.8
+- `offerAmount = round(base£/kg × estimatedKg × tierMultiplier, 2)`
+- Explicit **weight grams** field (default 100 g → £26.16 IN/KH/PL, £22.24 MM at base)
+- Donor UI shows planning **£**; local payout remains a simulated rail
+- Financial 25% reserve is ops budgeting — not an escrow state
+
 ## Escrow rules (enforced in UI logic)
 
 States: `offered` → `accepted` → `proof_submitted` ‒ `shipped` → `received` → `qc_pass` | `qc_fail` → `paid` | `refunded` | `disputed`

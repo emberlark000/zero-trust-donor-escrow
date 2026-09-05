@@ -20,8 +20,8 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     allowlisted: true,
     highRisk: false,
     riskPoints: 18,
-    currency: 'INR',
-    payoutHint: 'Local wallet / bank rail (simulated)',
+    currency: 'GBP',
+    payoutHint: 'Planning £ — local INR payout via simulated rail',
   },
   KH: {
     code: 'KH',
@@ -29,8 +29,8 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     allowlisted: true,
     highRisk: false,
     riskPoints: 12,
-    currency: 'USD',
-    payoutHint: 'Local wallet (simulated)',
+    currency: 'GBP',
+    payoutHint: 'Planning £ — local USD/KHR payout via simulated rail',
   },
   MM: {
     code: 'MM',
@@ -38,8 +38,8 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     allowlisted: true,
     highRisk: true,
     riskPoints: 6,
-    currency: 'MMK',
-    payoutHint: 'Local rail (simulated) — HIGH OPERATIONAL RISK',
+    currency: 'GBP',
+    payoutHint: 'Planning £ — local MMK payout via simulated rail — HIGH OPERATIONAL RISK',
   },
   PL: {
     code: 'PL',
@@ -47,8 +47,8 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     allowlisted: true,
     highRisk: false,
     riskPoints: 18,
-    currency: 'PLN',
-    payoutHint: 'EU bank transfer (simulated)',
+    currency: 'GBP',
+    payoutHint: 'Planning £ — local PLN payout via simulated rail',
   },
   BR: {
     code: 'BR',

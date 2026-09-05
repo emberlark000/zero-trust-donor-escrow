@@ -1,0 +1,81 @@
+import type { CountryCode } from './types'
+
+export interface CountryInfo {
+  code: CountryCode
+  name: string
+  allowlisted: boolean
+  highRisk: boolean
+  currency: string
+  payoutHint: string
+  rejectReason?: string
+}
+
+/** Allowlist for this ticket: IN, KH, MM (high-risk), PL. Reject BR/PE/VN. */
+export const COUNTRIES: Record<CountryCode, CountryInfo> = {
+  IN: {
+    code: 'IN',
+    name: 'India',
+    allowlisted: true,
+    highRisk: false,
+    currency: 'INR',
+    payoutHint: 'Local wallet / bank rail (simulated)',
+  },
+  KH: {
+    code: 'KH',
+    name: 'Cambodia',
+    allowlisted: true,
+    highRisk: false,
+    currency: 'USD',
+    payoutHint: 'Local wallet (simulated)',
+  },
+  MM: {
+    code: 'MM',
+    name: 'Myanmar',
+    allowlisted: true,
+    highRisk: true,
+    currency: 'MMK',
+    payoutHint: 'Local rail (simulated) — HIGH OPERATIONAL RISK',
+  },
+  PL: {
+    code: 'PL',
+    name: 'Poland (E. Europe placeholder)',
+    allowlisted: true,
+    highRisk: false,
+    currency: 'PLN',
+    payoutHint: 'EU bank transfer (simulated)',
+  },
+  BR: {
+    code: 'BR',
+    name: 'Brazil',
+    allowlisted: false,
+    highRisk: false,
+    currency: 'BRL',
+    payoutHint: 'n/a',
+    rejectReason: 'Texture-label geography — not a real origin target for this ticket',
+  },
+  PE: {
+    code: 'PE',
+    name: 'Peru',
+    allowlisted: false,
+    highRisk: false,
+    currency: 'PEN',
+    payoutHint: 'n/a',
+    rejectReason: 'Marketing category — not a documented donor basin for this ticket',
+  },
+  VN: {
+    code: 'VN',
+    name: 'Vietnam',
+    allowlisted: false,
+    highRisk: false,
+    currency: 'VND',
+    payoutHint: 'n/a',
+    rejectReason: 'Out of scope for this ticket (no Vietnam path)',
+  },
+}
+
+export const ALLOWLIST: CountryCode[] = ['IN', 'KH', 'MM', 'PL']
+export const REJECT_DEMO: CountryCode[] = ['BR', 'PE', 'VN']
+
+export function isAllowlisted(code: CountryCode): boolean {
+  return COUNTRIES[code]?.allowlisted === true
+}

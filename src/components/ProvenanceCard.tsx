@@ -1,10 +1,11 @@
 import type { Lot } from '../lib/types'
 import { COUNTRIES } from '../lib/countries'
 
-/** Public lot scan — no home address / face. */
+/** Public lot scan — no home address / face. Texture + region + score band; raw ethnicity only if opted in. */
 export function ProvenanceCard({ lot }: { lot: Lot }) {
   const country = COUNTRIES[lot.country]
-  const proofHashes = lot.proofs.map((p) => p.sha256.slice(0, 12))
+  const interview = lot.interview
+  const score = lot.donorScore
 
   return (
     <article className="provenance-card">
@@ -21,6 +22,38 @@ export function ProvenanceCard({ lot }: { lot: Lot }) {
           </dd>
         </div>
         <div>
+          <dt>Texture class</dt>
+          <dd>
+            {interview?.textureClass ? (
+              <>
+                {interview.textureClass}
+                {interview.andreWalkerType ? ` · type ${interview.andreWalkerType}` : ''}
+              </>
+            ) : (
+              <span className="muted">Not recorded</span>
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>Donor score band</dt>
+          <dd>
+            {score ? (
+              <>
+                <span className="pill">{score.scoreBand}</span>{' '}
+                <span className="muted small">({score.tierLabel})</span>
+              </>
+            ) : (
+              <span className="muted">—</span>
+            )}
+          </dd>
+        </div>
+        {interview?.ethnicityPublicOptIn && interview.ethnicityAncestry && (
+          <div>
+            <dt>Ethnicity (donor opted in)</dt>
+            <dd>{interview.ethnicityAncestry}</dd>
+          </div>
+        )}
+        <div>
           <dt>Escrow / QC status</dt>
           <dd>
             <span className={`pill state-${lot.escrowState}`}>{lot.escrowState}</span>
@@ -31,9 +64,10 @@ export function ProvenanceCard({ lot }: { lot: Lot }) {
           <dd>{lot.lengthCm} cm</dd>
         </div>
         <div>
-          <dt>Virgin / chemical</dt>
+          <dt>Chemical statement (summary)</dt>
           <dd>
-            {lot.virgin ? 'Virgin claimed' : 'Chemical history disclosed'}: {lot.chemicalHistory || '—'}
+            {lot.virgin ? 'Near-virgin / heat-only claimed' : 'Chemical history disclosed'}:{' '}
+            {lot.chemicalHistory || '—'}
           </dd>
         </div>
         <div>
@@ -50,7 +84,7 @@ export function ProvenanceCard({ lot }: { lot: Lot }) {
         <div>
           <dt>Proof media hashes (truncated)</dt>
           <dd>
-            {proofHashes.length === 0 ? (
+            {lot.proofs.length === 0 ? (
               <span className="muted">None yet</span>
             ) : (
               <ul className="compact mono">
@@ -75,8 +109,9 @@ export function ProvenanceCard({ lot }: { lot: Lot }) {
         </div>
       </dl>
       <p className="privacy-note">
-        Public record omits donor home address, face, legal name, and payout credentials.
-        Alias session ID is not shown on consumer scan.
+        Public record omits donor home address, face, legal name, DOB-as-ID, and payout credentials.
+        Raw ethnicity is intake-only unless the donor opted into public display. Alias is not shown on
+        consumer scan.
       </p>
     </article>
   )

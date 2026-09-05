@@ -178,3 +178,31 @@ main { flex: 1; max-width: 960px; margin: 0 auto; padding: 1.25rem; width: 100%;
 .audit-list { list-style: none; padding: 0; max-height: 360px; overflow: auto; }
 .audit-list li { padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
 .audit-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-bottom: 0.25rem; font-size: 0.8rem; color: var(--muted); }
+
+.score-box {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin: 0.85rem 0;
+}
+.score-box h4 { margin: 0 0 0.5rem; }
+.score-breakdown {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+.score-breakdown li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.score-breakdown li em {
+  font-style: normal;
+  color: var(--accent2);
+  font-size: 0.85rem;
+  margin-left: 0.35rem;
+}

@@ -5,6 +5,8 @@ export interface CountryInfo {
   name: string
   allowlisted: boolean
   highRisk: boolean
+  /** Relative country-risk score points (0–20). MM capped lower. */
+  riskPoints: number
   currency: string
   payoutHint: string
   rejectReason?: string
@@ -17,6 +19,7 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     name: 'India',
     allowlisted: true,
     highRisk: false,
+    riskPoints: 18,
     currency: 'INR',
     payoutHint: 'Local wallet / bank rail (simulated)',
   },
@@ -25,6 +28,7 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     name: 'Cambodia',
     allowlisted: true,
     highRisk: false,
+    riskPoints: 12,
     currency: 'USD',
     payoutHint: 'Local wallet (simulated)',
   },
@@ -33,6 +37,7 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     name: 'Myanmar',
     allowlisted: true,
     highRisk: true,
+    riskPoints: 6,
     currency: 'MMK',
     payoutHint: 'Local rail (simulated) — HIGH OPERATIONAL RISK',
   },
@@ -41,6 +46,7 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     name: 'Poland (E. Europe placeholder)',
     allowlisted: true,
     highRisk: false,
+    riskPoints: 18,
     currency: 'PLN',
     payoutHint: 'EU bank transfer (simulated)',
   },
@@ -49,6 +55,7 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     name: 'Brazil',
     allowlisted: false,
     highRisk: false,
+    riskPoints: 0,
     currency: 'BRL',
     payoutHint: 'n/a',
     rejectReason: 'Texture-label geography — not a real origin target for this ticket',
@@ -58,6 +65,7 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     name: 'Peru',
     allowlisted: false,
     highRisk: false,
+    riskPoints: 0,
     currency: 'PEN',
     payoutHint: 'n/a',
     rejectReason: 'Marketing category — not a documented donor basin for this ticket',
@@ -67,6 +75,7 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     name: 'Vietnam',
     allowlisted: false,
     highRisk: false,
+    riskPoints: 0,
     currency: 'VND',
     payoutHint: 'n/a',
     rejectReason: 'Out of scope for this ticket (no Vietnam path)',

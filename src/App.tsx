@@ -35,7 +35,7 @@ export default function App() {
       <nav className="topnav">
         <div className="brand">
           <strong>ZT Donor Escrow</strong>
-          <span className="muted small">v1 simulation</span>
+          <span className="muted small">v1.1 score+interview</span>
         </div>
         <div className="nav-actions">
           <button type="button" className="btn ghost" onClick={() => setRole('donor')}>

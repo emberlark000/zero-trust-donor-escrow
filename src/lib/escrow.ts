@@ -20,6 +20,14 @@ export function canTransition(from: EscrowState, to: EscrowState): boolean {
   return TRANSITIONS[from]?.includes(to) ?? false
 }
 
+export function hasRequiredCutVideo(lot: Lot): boolean {
+  return lot.proofs.some((p) => p.kind === 'cut_video' && !!p.sha256)
+}
+
+export function hasRequiredSealPhoto(lot: Lot): boolean {
+  return lot.proofs.some((p) => p.kind === 'seal_photo' && !!p.sha256)
+}
+
 /**
  * Brand funds escrow on accept (simulation).
  * Release to donor ONLY on qc_pass → paid.
@@ -27,6 +35,10 @@ export function canTransition(from: EscrowState, to: EscrowState): boolean {
  */
 export async function acceptOffer(lot: Lot, actor: string): Promise<Lot> {
   if (lot.escrowState !== 'offered') throw new Error('Offer not in offered state')
+  if (!lot.donorScore || lot.donorScore.gated || lot.donorScore.tier === 'none') {
+    throw new Error('Cannot accept: no valid donor-score offer')
+  }
+  if (lot.offerAmountLocal <= 0) throw new Error('Cannot accept: offer amount is zero')
   const fee = Math.round(lot.offerAmountLocal * (lot.platformFeePct / 100) * 100) / 100
   const hold = lot.offerAmountLocal
   const next: Lot = {
@@ -49,7 +61,7 @@ export async function acceptOffer(lot: Lot, actor: string): Promise<Lot> {
   await appendAudit(
     actor,
     'escrow.fund_on_accept',
-    `SIMULATION: brand funded escrow ${hold} ${lot.currency} (platform fee disclosed ${fee}). Hold until QC pass.`,
+    `SIMULATION: brand funded escrow ${hold} ${lot.currency} (platform fee disclosed ${fee}). Score ${lot.donorScore.total} → ${lot.donorScore.tierLabel}. Hold until QC pass.`,
     lot.lotId,
   )
   return next
@@ -64,6 +76,19 @@ export async function advanceState(
   if (!canTransition(lot.escrowState, to)) {
     throw new Error(`Illegal transition ${lot.escrowState} → ${to}`)
   }
+  // Hard block: cut video required for proof_submitted / ship path
+  if (to === 'proof_submitted' && !hasRequiredCutVideo(lot)) {
+    throw new Error('Cut video is REQUIRED — cannot reach proof_submitted without cut video hash')
+  }
+  if (to === 'shipped') {
+    if (!hasRequiredCutVideo(lot)) {
+      throw new Error('Cannot ship without cut video proof')
+    }
+    if (!hasRequiredSealPhoto(lot)) {
+      throw new Error('Cannot ship without seal photo')
+    }
+  }
+
   const ts = new Date().toISOString()
   const timestamps = { ...lot.timestamps }
   if (to === 'proof_submitted') timestamps.proofSubmitted = ts

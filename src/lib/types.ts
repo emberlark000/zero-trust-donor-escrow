@@ -13,13 +13,33 @@ export type EscrowState =
 
 export type CountryCode = 'IN' | 'KH' | 'MM' | 'PL' | 'BR' | 'PE' | 'VN'
 
+export type ChemicalHistoryKind =
+  | 'near_virgin'
+  | 'heat_only'
+  | 'semi_permanent'
+  | 'previously_colored'
+  | 'previously_bleached'
+  | 'keratin_other'
+
+export type TextureClass = 'straight' | 'wavy' | 'curly' | 'coily'
+
+export type OfferTier = 'none' | 'base' | 'mid' | 'high' | 'top'
+
 export interface ProofFileMeta {
   name: string
   size: number
   type: string
   sha256: string
   uploadedAt: string
-  kind: 'precut_video' | 'precut_photo' | 'cut_video' | 'seal_photo' | 'received_photo' | 'other'
+  kind:
+    | 'precut_video'
+    | 'precut_photo'
+    | 'cut_video'
+    | 'seal_photo'
+    | 'received_photo'
+    | 'interview_video'
+    | 'interview_audio'
+    | 'other'
 }
 
 export interface QcChecklistItem {
@@ -36,6 +56,39 @@ export interface DualControlOverride {
   at: string
 }
 
+/** Structured interview — product matching, not KYC. No DOB-as-ID. */
+export interface DonorInterview {
+  statedAge: number
+  ageBand: string
+  chemicalKind: ChemicalHistoryKind
+  chemicalStatement: string
+  countryOfOrigin: CountryCode
+  ethnicityAncestry: string
+  ethnicityPublicOptIn: boolean
+  textureClass: TextureClass
+  andreWalkerType?: string
+}
+
+export interface ScoreBreakdownLine {
+  factor: string
+  points: number
+  max: number
+  note: string
+}
+
+export interface DonorScoreResult {
+  total: number
+  gated: boolean
+  gateReason?: string
+  breakdown: ScoreBreakdownLine[]
+  tier: OfferTier
+  tierLabel: string
+  multiplier: number
+  offerAmountLocal: number
+  baseAmountLocal: number
+  scoreBand: string
+}
+
 export interface Lot {
   lotId: string
   alias: string
@@ -45,6 +98,8 @@ export interface Lot {
   virgin: boolean
   age18Plus: boolean
   chemicalHistory: string
+  interview?: DonorInterview
+  donorScore?: DonorScoreResult
   escrowState: EscrowState
   offerAmountLocal: number
   currency: string

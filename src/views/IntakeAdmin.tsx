@@ -180,6 +180,7 @@ export function IntakeAdmin({ actor, auditKey, onAudit }: Props) {
               <tr>
                 <th>Lot</th>
                 <th>Country</th>
+                <th>Score</th>
                 <th>State</th>
                 <th>Amount</th>
                 <th />
@@ -197,6 +198,7 @@ export function IntakeAdmin({ actor, auditKey, onAudit }: Props) {
                       {c.name}
                       {c.highRisk && <span className="badge risk">HIGH-RISK</span>}
                     </td>
+                    <td>{l.donorScore ? l.donorScore.total : '—'}</td>
                     <td>
                       <span className={`pill state-${l.escrowState}`}>{l.escrowState}</span>
                     </td>
@@ -229,6 +231,40 @@ export function IntakeAdmin({ actor, auditKey, onAudit }: Props) {
             Alias: <strong>{selected.alias}</strong> · Tracking:{' '}
             <code>{selected.trackingNumber || '—'}</code>
           </p>
+          {selected.donorScore && (
+            <div className="score-box">
+              <h4>
+                Donor score {selected.donorScore.total}/100 · {selected.donorScore.tierLabel} · band{' '}
+                {selected.donorScore.scoreBand}
+              </h4>
+              <ul className="score-breakdown">
+                {selected.donorScore.breakdown.map((b) => (
+                  <li key={b.factor}>
+                    <span>
+                      {b.factor}: {b.points}/{b.max || 'gate'}
+                    </span>
+                    <span className="muted small">{b.note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {selected.interview && (
+            <div className="money-sim">
+              <h4>Interview (intake — not public KYC)</h4>
+              <ul>
+                <li>
+                  Stated age / band: {selected.interview.statedAge} / {selected.interview.ageBand}
+                </li>
+                <li>Texture: {selected.interview.textureClass}</li>
+                <li>Ethnicity (intake): {selected.interview.ethnicityAncestry}</li>
+                <li>Chemical: {selected.interview.chemicalKind}</li>
+                <li>
+                  Statement: <em>{selected.interview.chemicalStatement}</em>
+                </li>
+              </ul>
+            </div>
+          )}
           <div className="money-sim">
             <ul>
               <li>Escrow hold: {selected.escrowSim.escrowHold}</li>

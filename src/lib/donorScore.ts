@@ -10,14 +10,14 @@ import type {
 import { COUNTRIES } from './countries'
 
 /**
- * GBP planning base £/kg by country (Financial 2026-09-05).
- * IN/KH/PL = 261.63; MM = 222.39 (×0.85 ops/risk haircut).
+ * GBP planning base £/kg by country (Financial country-spread 2026-09-05).
+ * IN 261.63 (×1.00), KH 274.71 (×1.05), PL 313.96 (×1.20), MM 222.39 (×0.85).
  * Tiers multiply 1.0 / 1.25 / 1.5 / 1.8 on country base.
  */
 export const BASE_GBP_PER_KG: Record<string, number> = {
   IN: 261.63,
-  KH: 261.63,
-  PL: 261.63,
+  KH: 274.71,
+  PL: 313.96,
   MM: 222.39,
 }
 
